@@ -1,5 +1,5 @@
 
-version: '3.0'
+version: '3.2'
 
 services:
   # guacd
@@ -27,8 +27,13 @@ services:
     image: postgres
     restart: unless-stopped
     volumes:
-      - dbinit:/docker-entrypoint-initdb.d
-      - dbdata:/var/lib/postgresql/data
+      - type: volume
+        source: dbinit
+        target: /docker-entrypoint-initdb.d
+#      - dbinit:/docker-entrypoint-initdb.d
+      - type: volume
+        source: dbdata
+        target: /var/lib/postgresql/data
 #    - ./init:/docker-entrypoint-initdb.d:ro
 #    - ./data:/var/lib/postgresql/data:rw
     depends_on:
@@ -54,24 +59,45 @@ services:
       - "8080:8080"
 ## enable next line when using nginx
 #    - 8080/tcp
-    restart: always
-
-  apache-setup:
-    image: guacamole/guacamole
+    restart: on-failure
+    build: .
     volumes:
-      - "./tomcat-setup.sh:/usr/local/bin/apache2-custom.sh"
-    command:
-      - apache2-custom.sh
-    depends_on:
-      - guacamole
-      - postgres
-      - guacd
+#      - ./guacamole:/guacamole:rw
+      - type: bind
+        source: .
+        target: /code
+      - type: volume
+        source: guacamole_volume
+        target: /vol/
+#    command:
+#      - /code/tomcat-setup.sh
+#      - exec /opt/guacamole/bin/start.sh
+
+#  apache-setup:
+#    image: guacamole/guacamole
+#    volumes:
+##      - type: volume
+##        source: ./tomcat-setup.sh
+##        target: /usr/local/bin/apache2-custom.sh
+#      - type: volume
+#        source: guacamole_volume
+#        target: /usr/local/
+#    entrypoint:
+#      - ./code/tomcat-setup.sh
+#    depends_on:
+#      - guacamole
+#      - postgres
+#      - guacd
+#    links:
+#      - guacamole
 
 volumes:
   dbinit:
     driver: local
   dbdata:
     driver: local
+  guacamole_volume:
+
 
 #
 #  apache:
