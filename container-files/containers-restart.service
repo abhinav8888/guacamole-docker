@@ -1,0 +1,13 @@
+[Unit]
+Description=Service to restart docker containers
+After=docker.service
+Requires=docker.service
+
+[Service]
+TimeoutStartSec=0
+Restart=always
+ExecStart=/usr/local/bin/docker-compose -f /home/ubuntu/guacamole-docker/docker-compose.yml up --build
+ExecStop=/usr/local/bin/docker-compose -f /home/ubuntu/guacamole-docker/docker-compose.yml stop
+
+[Install]
+WantedBy=multi-user.target
